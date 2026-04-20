@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>50/50 Image Library</title>
+  <style>
+    body {
+      background: #0d0d1a;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 48px;
+      margin: 0;
+    }
+    h1 { color: #6c63ff; margin-bottom: 8px; }
+    .count { color: #888; margin-bottom: 40px; font-size: 14px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 24px;
+    }
+    .card {
+      background: #1a1a2e;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      border: 1px solid #2a2a4a;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .card:hover { border-color: #6c63ff; transform: translateY(-3px); }
+    .card img { width: 130px; height: 130px; display: block; margin: 0 auto 12px; }
+    .card .name { font-size: 13px; color: #bbb; text-transform: capitalize; letter-spacing: 0.5px; }
+  </style>
+</head>
+<body>
+  <h1>50/50 Image Library</h1>
+  <div class="count">4 images</div>
+  <div class="grid" id="gallery"></div>
+
+  <script>
+    const images = ['banana', 'candy_cane', 'eggplant', 'pizza_slice'];
+    const grid = document.getElementById('gallery');
+    images.forEach(name => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `<img src="/images/${name}.svg" alt="${name}"><div class="name">${name.replace(/_/g,' ')}</div>`;
+      grid.appendChild(card);
+    });
+  </script>
+</body>
+</html>

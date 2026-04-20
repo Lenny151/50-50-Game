@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>50/50</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ── HOME ──────────────────────────────────────────────────────────── -->
+  <div id="screen-home" class="screen active">
+    <div class="logo">50<span class="slash">/</span>50</div>
+    <p class="tagline">Cut it in half. Score big.</p>
+    <div class="card">
+      <input id="player-name" type="text" placeholder="Your name" maxlength="20" autocomplete="off">
+      <button id="btn-create" class="btn btn-primary">Create Game</button>
+      <div class="divider"><span>or join with a code</span></div>
+      <div class="join-row">
+        <input id="room-code" type="text" placeholder="XXXX" maxlength="4" autocomplete="off" spellcheck="false">
+        <button id="btn-join" class="btn btn-secondary">Join</button>
+      </div>
+      <div id="home-error" class="error-msg"></div>
+    </div>
+  </div>
+
+  <!-- ── LOBBY ─────────────────────────────────────────────────────────── -->
+  <div id="screen-lobby" class="screen">
+    <div class="logo small">50<span class="slash">/</span>50</div>
+    <div class="lobby-code-wrap">
+      <span class="lobby-code-label">Room code</span>
+      <div class="lobby-code" id="lobby-code">----</div>
+      <button class="btn btn-ghost btn-sm" id="btn-copy-code">Copy link</button>
+    </div>
+    <div class="card">
+      <div class="player-count-row">
+        <h3>Players</h3>
+        <span class="badge" id="player-count">0</span>
+      </div>
+      <div id="player-list" class="player-list"></div>
+      <button id="btn-start" class="btn btn-primary hidden">Start Game</button>
+      <p id="waiting-msg" class="muted-text">Waiting for the host to start…</p>
+    </div>
+  </div>
+
+  <!-- ── DRAWING ───────────────────────────────────────────────────────── -->
+  <div id="screen-drawing" class="screen">
+    <div class="game-header">
+      <div class="round-label" id="draw-round">Round 1 / 10</div>
+      <div class="timer-wrap">
+        <svg class="timer-ring" viewBox="0 0 60 60">
+          <circle class="timer-track" cx="30" cy="30" r="26"/>
+          <circle class="timer-progress" id="timer-ring" cx="30" cy="30" r="26"
+            stroke-dasharray="163.36" stroke-dashoffset="0"/>
+        </svg>
+        <span class="timer-num" id="timer-num">30</span>
+      </div>
+      <div class="progress-label" id="progress-label"></div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="game-canvas"></canvas>
+      <!-- Submitted overlay -->
+      <div id="submitted-overlay" class="submitted-overlay hidden">
+        <div class="submitted-card">
+          <div class="submitted-icon">✓</div>
+          <div class="submitted-title">Cut submitted!</div>
+          <div id="waiting-count" class="submitted-sub"></div>
+          <div class="score-preview" id="score-preview"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="draw-footer">
+      <button id="btn-clear" class="btn btn-ghost">Clear</button>
+      <div class="hint-text" id="draw-hint">Draw a line to cut the image in half!</div>
+      <button id="btn-submit" class="btn btn-primary" disabled>Submit Cut</button>
+    </div>
+  </div>
+
+  <!-- ── RESULTS ───────────────────────────────────────────────────────── -->
+  <div id="screen-results" class="screen">
+    <div class="results-header">
+      <div class="round-label" id="results-round-label">Cuts coming in…</div>
+    </div>
+    <div id="cuts-grid" class="cuts-grid"></div>
+    <div id="scores-section" class="scores-section hidden">
+      <div class="scores-section-title">Scoreboard</div>
+      <div id="scores-list" class="scores-list"></div>
+      <div class="results-actions">
+        <button id="btn-next-round" class="btn btn-primary hidden">Next Round →</button>
+        <button id="btn-see-final"  class="btn btn-accent  hidden">Final Scores →</button>
+        <p id="host-waiting-msg" class="muted-text hidden">Waiting for host…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── GAME OVER ─────────────────────────────────────────────────────── -->
+  <div id="screen-final" class="screen">
+    <div class="logo small">50<span class="slash">/</span>50</div>
+    <h2 class="final-title">Game Over!</h2>
+    <div id="final-podium" class="final-podium"></div>
+    <div id="final-list"   class="final-list"></div>
+    <button id="btn-play-again" class="btn btn-primary">Play Again</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="client.js"></script>
+</body>
+</html>
