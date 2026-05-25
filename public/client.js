@@ -115,13 +115,22 @@ socket.on('error', (msg) => {
   showError(msg);
 });
 
-socket.on('joined', ({ code, isHost: host }) => {
+socket.on('joined', ({ code, isHost: host, midGameJoin, gameState }) => {
   roomCode = code;
   isHost   = host;
   document.getElementById('lobby-code').textContent = code;
 
-  document.getElementById('btn-start').classList.toggle('hidden', !host);
-  document.getElementById('waiting-msg').classList.toggle('hidden', host);
+  if (midGameJoin) {
+    document.getElementById('btn-start').classList.add('hidden');
+    const waitEl = document.getElementById('waiting-msg');
+    waitEl.textContent = gameState === 'drawing'
+      ? 'Joining game in progress…'
+      : 'Game in progress — you\'ll join from the next round';
+    waitEl.classList.remove('hidden');
+  } else {
+    document.getElementById('btn-start').classList.toggle('hidden', !host);
+    document.getElementById('waiting-msg').classList.toggle('hidden', host);
+  }
 
   showScreen('screen-lobby');
   history.replaceState(null, '', `?code=${code}`);
@@ -156,7 +165,7 @@ socket.on('new-host', (hostId) => {
   }
 });
 
-socket.on('round-start', ({ round, total, image, duration }) => {
+socket.on('round-start', ({ round, total, image, duration, elapsed }) => {
   currentImage    = image;
   submitted       = false;
   currentPath     = [];
@@ -175,7 +184,8 @@ socket.on('round-start', ({ round, total, image, duration }) => {
 
   setupDrawCanvas(image);
   showScreen('screen-drawing');
-  startTimer(duration / 1000);
+  const remainingMs = elapsed ? Math.max(0, duration - elapsed) : duration;
+  startTimer(remainingMs / 1000, duration / 1000);
 });
 
 socket.on('cut-accepted', () => {
@@ -435,19 +445,20 @@ function submitCut() {
 }
 
 // ── Timer ─────────────────────────────────────────────────────────────────
-function startTimer(seconds) {
+function startTimer(remainingSeconds, totalSeconds) {
   clearTimer();
-  const ring       = document.getElementById('timer-ring');
-  const numEl      = document.getElementById('timer-num');
+  totalSeconds = totalSeconds || remainingSeconds;
+  const ring          = document.getElementById('timer-ring');
+  const numEl         = document.getElementById('timer-num');
   const circumference = 163.36;
-  let remaining    = seconds;
+  let remaining       = remainingSeconds;
 
   function tick() {
     remaining = Math.max(0, remaining - 1);
     numEl.textContent = remaining;
-    ring.style.strokeDashoffset = circumference * (1 - remaining / seconds);
+    ring.style.strokeDashoffset = circumference * (1 - remaining / totalSeconds);
 
-    const pct = remaining / seconds;
+    const pct = remaining / totalSeconds;
     ring.style.stroke = pct > 0.5 ? 'var(--green)'
                       : pct > 0.25 ? 'var(--yellow)'
                       : 'var(--red)';

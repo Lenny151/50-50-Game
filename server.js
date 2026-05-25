@@ -177,16 +177,33 @@ io.on('connection', (socket) => {
     const upper = code?.toUpperCase().trim();
     const room  = rooms.get(upper);
 
-    if (!room)                        return socket.emit('error', 'Room not found — check the code');
-    if (room.state !== 'lobby')       return socket.emit('error', 'That game has already started');
+    if (!room)                            return socket.emit('error', 'Room not found — check the code');
+    if (room.state === 'finished')        return socket.emit('error', 'That game has already finished');
     if (room.players.size >= MAX_PLAYERS) return socket.emit('error', 'Room is full');
 
     room.players.set(socket.id, { name: name.trim(), score: 0 });
     socket.join(upper);
     socket.data.code = upper;
 
-    socket.emit('joined', { code: upper, isHost: false });
+    const midGameJoin = room.state !== 'lobby';
+    socket.emit('joined', { code: upper, isHost: false, midGameJoin, gameState: room.state });
     io.to(upper).emit('players', getPlayerList(room));
+
+    if (room.state === 'drawing') {
+      const elapsed = Date.now() - room.roundStart;
+      socket.emit('round-start', {
+        round:    room.round,
+        total:    Math.min(ROUNDS_PER_GAME, room.images.length),
+        image:    room.currentImage,
+        duration: ROUND_DURATION_MS,
+        elapsed,
+      });
+      for (const [playerId, sub] of room.submissions) {
+        const player = room.players.get(playerId);
+        if (player) socket.emit('cut-submitted', { id: playerId, name: player.name, points: sub.points });
+      }
+      socket.emit('progress', { submitted: room.submissions.size, total: room.players.size });
+    }
   });
 
   socket.on('start-game', () => {
