@@ -194,6 +194,16 @@ socket.on('round-start', ({ round, total, image, duration, elapsed }) => {
   document.getElementById('progress-label').textContent = '';
   document.getElementById('draw-hint').textContent = 'Loading…';
 
+  // Reset timer display immediately so previous-round state doesn't show.
+  // Disable the CSS transition first so it snaps rather than animates backwards.
+  const ringEl = document.getElementById('timer-ring');
+  const numEl  = document.getElementById('timer-num');
+  ringEl.style.transition = 'none';
+  ringEl.style.strokeDashoffset = '0';
+  ringEl.style.stroke = 'var(--green)';
+  numEl.textContent = Math.round(duration / 1000);
+  requestAnimationFrame(() => { ringEl.style.transition = ''; });
+
   // Streak badge — show what multiplier the player can earn this round
   const badge = document.getElementById('streak-badge');
   if (myStreak >= 1) {
