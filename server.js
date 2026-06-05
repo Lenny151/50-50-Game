@@ -29,7 +29,19 @@ const IMAGES = [
 // Accuracy:  0–100  – how close to a perfect 50/50 split
 // Speed:     0–30   – faster submissions score more
 // Style:     0–50   – how creative (non-straight) the cut was
-// Max total: 180 per round
+// Max total: 180 per round  (× streak multiplier)
+
+// ── Streak ─────────────────────────────────────────────────────────────────
+// A "streak" is consecutive rounds where the cut is within STREAK_THRESHOLD
+// of a perfect 50/50.  The multiplier rewards consistency.
+const STREAK_THRESHOLD = 0.03;  // ratio must be 0.47–0.53
+
+function getMultiplier(streak) {
+  if (streak >= 4) return 2.0;
+  if (streak === 3) return 1.5;
+  if (streak === 2) return 1.25;
+  return 1.0;
+}
 
 function scoreAccuracy(ratio) {
   // deviation 0 = perfect 50/50, 0.5 = entire image on one side
@@ -109,23 +121,41 @@ function endRound(room) {
 
   const results = [];
   for (const [id, player] of room.players) {
-    const sub      = room.submissions.get(id);
-    const roundPts = sub ? sub.total : 0;
-    player.score  += roundPts;
+    const sub = room.submissions.get(id);
 
-    results.push({
-      id,
-      name:       player.name,
-      totalScore: player.score,
-      round: sub ? {
-        accuracy: sub.accuracy,
-        speed:    sub.speed,
-        style:    sub.style,
-        total:    sub.total,
-        points:   sub.points,
-        ratio:    sub.ratio,
-      } : null,
-    });
+    if (sub) {
+      const onStreak  = Math.abs(sub.ratio - 0.5) <= STREAK_THRESHOLD;
+      const newStreak = onStreak ? player.streak + 1 : 0;
+      player.streak   = newStreak;
+      const multiplier = getMultiplier(newStreak);
+      const roundPts   = Math.round(sub.total * multiplier);
+      player.score    += roundPts;
+
+      results.push({
+        id,
+        name:       player.name,
+        totalScore: player.score,
+        round: {
+          accuracy:   sub.accuracy,
+          speed:      sub.speed,
+          style:      sub.style,
+          base:       sub.total,
+          total:      roundPts,
+          multiplier,
+          streak:     newStreak,
+          points:     sub.points,
+          ratio:      sub.ratio,
+        },
+      });
+    } else {
+      player.streak = 0;
+      results.push({
+        id,
+        name:       player.name,
+        totalScore: player.score,
+        round:      null,
+      });
+    }
   }
 
   results.sort((a, b) => b.totalScore - a.totalScore);
@@ -155,7 +185,7 @@ io.on('connection', (socket) => {
     const room = {
       code,
       hostId:       socket.id,
-      players:      new Map([[socket.id, { name: name.trim(), score: 0 }]]),
+      players:      new Map([[socket.id, { name: name.trim(), score: 0, streak: 0 }]]),
       state:        'lobby',
       round:        0,
       images:       shuffle(IMAGES),
@@ -181,7 +211,7 @@ io.on('connection', (socket) => {
     if (room.state === 'finished')        return socket.emit('error', 'That game has already finished');
     if (room.players.size >= MAX_PLAYERS) return socket.emit('error', 'Room is full');
 
-    room.players.set(socket.id, { name: name.trim(), score: 0 });
+    room.players.set(socket.id, { name: name.trim(), score: 0, streak: 0 });
     socket.join(upper);
     socket.data.code = upper;
 

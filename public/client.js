@@ -28,6 +28,16 @@ const PLAYER_COLORS = [
   '#8bc34a','#ff5722','#607d8b','#795548','#00acc1',
 ];
 
+// ── Streak helpers ───────────────────────────────────────────────────────
+const STREAK_THRESHOLD = 0.03; // must match server — ratio within 0.47–0.53
+
+function streakMultiplier(streak) {
+  if (streak >= 4) return 2.0;
+  if (streak === 3) return 1.5;
+  if (streak === 2) return 1.25;
+  return 1.0;
+}
+
 // ── State ────────────────────────────────────────────────────────────────
 const socket = io();
 
@@ -45,6 +55,7 @@ let transitionTimer  = null;  // setTimeout handle for drawing→results transit
 let roundEnded       = false; // true once round-end has been received
 let pendingRoundEnd  = null;  // stores round-end payload if it arrives before transition
 let imageCanvas      = null;  // offscreen canvas with clean image for style/alpha checks
+let myStreak         = 0;     // consecutive accurate cuts — drives streak badge
 
 // ── Screen management ────────────────────────────────────────────────────
 function showScreen(id) {
@@ -181,6 +192,16 @@ socket.on('round-start', ({ round, total, image, duration, elapsed }) => {
   document.getElementById('btn-submit').disabled = true;
   document.getElementById('progress-label').textContent = '';
   document.getElementById('draw-hint').textContent = 'Draw a line to cut the image in half!';
+
+  // Streak badge — show what multiplier the player can earn this round
+  const badge = document.getElementById('streak-badge');
+  if (myStreak >= 1) {
+    const potential = streakMultiplier(myStreak + 1);
+    badge.textContent = `🔥 ×${potential} on the line`;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
 
   setupDrawCanvas(image);
   showScreen('screen-drawing');
@@ -417,6 +438,11 @@ function submitCut() {
 
   socket.emit('submit-cut', { points: currentPath, ratio, style });
 
+  // Compute potential streak multiplier for the preview
+  const onStreak       = Math.abs(ratio - 0.5) <= STREAK_THRESHOLD;
+  const previewStreak  = onStreak ? myStreak + 1 : 0;
+  const previewMul     = streakMultiplier(previewStreak);
+
   // Show % split on the drawing screen
   renderDrawing();
   document.getElementById('submitted-overlay').classList.remove('hidden');
@@ -428,6 +454,7 @@ function submitCut() {
     <div class="score-pill accuracy">
       <span>${pctB}%</span><span class="pill-label">Side B</span>
     </div>
+    ${previewMul > 1 ? `<div class="score-pill style"><span>×${previewMul}</span><span class="pill-label">${previewStreak}🔥 Streak!</span></div>` : ''}
   `;
 
   // After a pause, move to the live results view.
@@ -647,6 +674,10 @@ function addCutToCanvas(id, name, points) {
 function showResults(results, imageName, isLastRound) {
   document.getElementById('results-round-label').textContent = 'Round Results';
 
+  // Update own streak from results so the next round's badge is correct
+  const myResult = results.find(r => r.id === myId);
+  if (myResult) myStreak = myResult.round ? myResult.round.streak : 0;
+
   // Ensure any missing cards exist (players who submitted but whose
   // cut-submitted event we missed, or players who didn't submit at all)
   results.forEach((r, i) => {
@@ -668,6 +699,7 @@ function showResults(results, imageName, isLastRound) {
       scoreEl.innerHTML = `
         ${medal ? `<span class="cut-rank">${medal}</span>` : `<span class="cut-rank" style="color:var(--muted);font-size:.7rem">#${i+1}</span>`}
         <span class="cut-acc">${pctA}% / ${pctB}%</span>
+        ${r.round.streak >= 2 ? `<span class="cut-streak" title="${r.round.streak}🔥 streak">🔥</span>` : ''}
         <span class="cut-total">${r.round.total}pts</span>
       `;
     } else {
@@ -689,6 +721,7 @@ function showResults(results, imageName, isLastRound) {
            <span class="score-tag acc">🎯 ${r.round.accuracy}</span>
            <span class="score-tag spd">⚡ ${r.round.speed}</span>
            <span class="score-tag sty">✨ ${r.round.style}</span>
+           ${r.round.multiplier > 1 ? `<span class="score-tag mul">🔥 ×${r.round.multiplier} (${r.round.streak} streak)</span>` : ''}
          </div>`
       : '<div class="score-breakdown"><span class="score-tag none">No cut</span></div>';
     row.innerHTML = `

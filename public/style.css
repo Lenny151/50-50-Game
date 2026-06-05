@@ -270,11 +270,34 @@ input[type="text"]::placeholder { color: var(--muted); }
   color: var(--text);
 }
 
+.progress-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 80px;
+}
+
 .progress-label {
   font-size: 0.85rem;
   color: var(--muted);
   text-align: right;
-  min-width: 80px;
+}
+
+.streak-badge {
+  background: linear-gradient(135deg, #ff9f40, #ef476f);
+  color: #fff;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-align: right;
+  animation: streakPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes streakPop {
+  from { transform: scale(0.5); opacity: 0; }
 }
 
 /* ── Drawing canvas ──────────────────────────────────────────────────────── */
@@ -512,6 +535,7 @@ input[type="text"]::placeholder { color: var(--muted); }
 .score-tag.acc  { background: rgba(67,233,123,0.15); color: var(--green); }
 .score-tag.spd  { background: rgba(255,209,102,0.15); color: var(--yellow); }
 .score-tag.sty  { background: rgba(192,132,252,0.15); color: #c084fc; }
+.score-tag.mul  { background: rgba(255,159,64,0.15);  color: #ff9f40; font-weight: 800; }
 .score-tag.none { background: var(--surface2); color: var(--muted); }
 
 .results-actions {
