@@ -178,6 +178,7 @@ socket.on('new-host', (hostId) => {
 
 socket.on('round-start', ({ round, total, image, duration, elapsed }) => {
   const receivedAt = Date.now(); // capture now so we can correct for load time
+  clearTimer(); // stop any running timer immediately — don't wait for image load
   currentImage    = image;
   submitted       = false;
   currentPath     = [];
@@ -216,12 +217,18 @@ socket.on('round-start', ({ round, total, image, duration, elapsed }) => {
 
   showScreen('screen-drawing');
 
-  // Start timer only once the image is painted — deduct load time from remaining
+  // Start timer only once the image is painted
   setupDrawCanvas(image).then(() => {
     document.getElementById('draw-hint').textContent = 'Draw a line to cut the image in half!';
-    const totalElapsed = (elapsed || 0) + (Date.now() - receivedAt);
-    const remainingMs  = Math.max(0, duration - totalElapsed);
-    startTimer(Math.round(remainingMs / 1000), duration / 1000);
+    if (elapsed != null) {
+      // Mid-game join — account for time elapsed since round started plus load time
+      const totalElapsed = elapsed + (Date.now() - receivedAt);
+      const remainingMs  = Math.max(0, duration - totalElapsed);
+      startTimer(Math.round(remainingMs / 1000), duration / 1000);
+    } else {
+      // Normal round — always start from full duration
+      startTimer(duration / 1000, duration / 1000);
+    }
   });
 });
 
@@ -503,7 +510,7 @@ function startTimer(remainingSeconds, totalSeconds) {
   let remaining       = remainingSeconds;
 
   function tick() {
-    remaining = Math.max(0, remaining - 1);
+    // Show current value first, then decrement — keeps display in sync with reset
     numEl.textContent = remaining;
     ring.style.strokeDashoffset = circumference * (1 - remaining / totalSeconds);
 
@@ -515,7 +522,9 @@ function startTimer(remainingSeconds, totalSeconds) {
     if (remaining === 0) {
       clearTimer();
       if (!submitted) submitCut(); // auto-submit on timeout
+      return;
     }
+    remaining--;
   }
 
   tick();

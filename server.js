@@ -83,6 +83,17 @@ function genCode() {
   return Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
+// ── Image queue ────────────────────────────────────────────────────────────
+// Ensures all 57 images are seen before any repeat across games.
+let imageQueue = [];
+
+function nextGameImages() {
+  if (imageQueue.length < ROUNDS_PER_GAME) {
+    imageQueue = shuffle(IMAGES);
+  }
+  return imageQueue.splice(0, ROUNDS_PER_GAME);
+}
+
 // ── State ──────────────────────────────────────────────────────────────────
 const rooms = new Map();
 
@@ -188,7 +199,7 @@ io.on('connection', (socket) => {
       players:      new Map([[socket.id, { name: name.trim(), score: 0, streak: 0 }]]),
       state:        'lobby',
       round:        0,
-      images:       shuffle(IMAGES),
+      images:       nextGameImages(),
       roundStart:   null,
       submissions:  new Map(),
       timer:        null,
