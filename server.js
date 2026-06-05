@@ -2,7 +2,6 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
-const fs   = require('fs');
 
 const app = express();
 const server = http.createServer(app);
@@ -84,36 +83,6 @@ function genCode() {
   return Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-// ── Image queue ────────────────────────────────────────────────────────────
-// Persisted to disk so server restarts don't reset progress through the list.
-// All 57 images are seen before any repeat across games.
-const QUEUE_FILE = path.join(__dirname, '.image-queue.json');
-
-function loadQueue() {
-  try {
-    const data = JSON.parse(fs.readFileSync(QUEUE_FILE, 'utf8'));
-    if (Array.isArray(data)) {
-      // Filter out any image names that no longer exist (handles added/removed images)
-      return data.filter(img => IMAGES.includes(img));
-    }
-  } catch (_) { /* file missing or invalid — start fresh */ }
-  return [];
-}
-
-function saveQueue(queue) {
-  try { fs.writeFileSync(QUEUE_FILE, JSON.stringify(queue)); } catch (_) {}
-}
-
-let imageQueue = loadQueue();
-
-function nextGameImages() {
-  if (imageQueue.length < ROUNDS_PER_GAME) {
-    imageQueue = shuffle(IMAGES);
-  }
-  const images = imageQueue.splice(0, ROUNDS_PER_GAME);
-  saveQueue(imageQueue);
-  return images;
-}
 
 // ── State ──────────────────────────────────────────────────────────────────
 const rooms = new Map();
@@ -220,7 +189,7 @@ io.on('connection', (socket) => {
       players:      new Map([[socket.id, { name: name.trim(), score: 0, streak: 0 }]]),
       state:        'lobby',
       round:        0,
-      images:       nextGameImages(),
+      images:       shuffle(IMAGES).slice(0, ROUNDS_PER_GAME),
       roundStart:   null,
       submissions:  new Map(),
       timer:        null,
