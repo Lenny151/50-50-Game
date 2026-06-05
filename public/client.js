@@ -731,7 +731,10 @@ function showResults(results, imageName, isLastRound) {
         <div class="score-comment">${getFunnyComment(r.round)}</div>
         ${breakdown}
       </div>
-      <div class="score-total">${r.totalScore}</div>
+      <div class="score-totals">
+        <div class="score-round-pts">${r.round ? '+' + r.round.total : '+0'}</div>
+        <div class="score-total">${r.totalScore} total</div>
+      </div>
     `;
     scoresList.appendChild(row);
   });

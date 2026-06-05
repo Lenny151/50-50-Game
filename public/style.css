@@ -591,7 +591,26 @@ input[type="text"]::placeholder { color: var(--muted); }
 
 .score-name    { flex: 1; font-weight: 600; font-size: 0.95rem; }
 .score-comment { font-size: 0.75rem; color: var(--muted); font-style: italic; margin: 2px 0; }
-.score-total { font-size: 1.1rem; font-weight: 800; color: var(--primary); min-width: 50px; text-align: right; }
+
+.score-totals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  min-width: 70px;
+}
+.score-round-pts {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--green);
+  line-height: 1;
+}
+.score-total {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-align: right;
+}
 
 .score-breakdown {
   display: flex;
