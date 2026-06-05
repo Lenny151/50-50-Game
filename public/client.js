@@ -256,6 +256,7 @@ function setupDrawCanvas(imageName) {
   const canvas = document.getElementById('game-canvas');
   canvas.width  = CANVAS_SIZE;
   canvas.height = CANVAS_SIZE;
+  canvas.style.opacity = '0'; // hide until image is painted — prevents white flash
   const ctx = canvas.getContext('2d');
 
   // Transparent offscreen canvas — no background fill so undrawn pixels stay
@@ -273,6 +274,7 @@ function setupDrawCanvas(imageName) {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
     ctx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    canvas.style.opacity = '1'; // fade in once image is ready
     // imageCanvas stays transparent — used for alpha checks in ratio + style
     imgCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
     imgCtx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);

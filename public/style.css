@@ -377,6 +377,7 @@ input[type="text"]::placeholder { color: var(--muted); }
   max-width: min(500px, calc(100vw - 24px));
   max-height: min(500px, calc(100vh - 180px));
   background: #ffffff;
+  transition: opacity 0.2s ease;
 }
 
 .submitted-overlay {
