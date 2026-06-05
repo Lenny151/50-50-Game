@@ -22,6 +22,40 @@
       </div>
       <div id="home-error" class="error-msg"></div>
     </div>
+
+    <div class="score-info">
+      <div class="score-info-title">How it's scored</div>
+      <div class="score-info-grid">
+        <div class="score-info-item">
+          <span class="score-info-icon">🎯</span>
+          <div>
+            <div class="score-info-label">Accuracy <span class="score-info-max">0–100 pts</span></div>
+            <div class="score-info-desc">How close to a perfect 50/50 split</div>
+          </div>
+        </div>
+        <div class="score-info-item">
+          <span class="score-info-icon">⚡</span>
+          <div>
+            <div class="score-info-label">Speed <span class="score-info-max">0–30 pts</span></div>
+            <div class="score-info-desc">Faster cuts score higher</div>
+          </div>
+        </div>
+        <div class="score-info-item">
+          <span class="score-info-icon">✨</span>
+          <div>
+            <div class="score-info-label">Style <span class="score-info-max">0–50 pts</span></div>
+            <div class="score-info-desc">Wiggly cuts over the image score more</div>
+          </div>
+        </div>
+        <div class="score-info-item">
+          <span class="score-info-icon">🔥</span>
+          <div>
+            <div class="score-info-label">Streak <span class="score-info-max">up to ×2.0</span></div>
+            <div class="score-info-desc">Cuts within a 47/53 split, back to back, multiply your score</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ── LOBBY ─────────────────────────────────────────────────────────── -->
@@ -89,6 +123,12 @@
     <div id="cuts-grid" class="cuts-grid"></div>
     <div id="scores-section" class="scores-section hidden">
       <div class="scores-section-title">Scoreboard</div>
+      <div class="scores-legend">
+        <span>🎯 <strong>Accuracy</strong> — closeness to 50/50 <em>(0–100 pts)</em></span>
+        <span>⚡ <strong>Speed</strong> — time remaining on the clock <em>(0–30 pts)</em></span>
+        <span>✨ <strong>Style</strong> — wiggly cuts over the image <em>(0–50 pts)</em></span>
+        <span>🔥 <strong>Streak</strong> — cuts within 47/53, back to back <em>(up to ×2.0)</em></span>
+      </div>
       <div id="scores-list" class="scores-list"></div>
       <div class="results-actions">
         <button id="btn-next-round" class="btn btn-primary hidden">Next Round →</button>

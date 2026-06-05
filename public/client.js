@@ -728,6 +728,7 @@ function showResults(results, imageName, isLastRound) {
       <div class="score-rank ${rankClass}">${rankLabel}</div>
       <div style="flex:1">
         <div class="score-name">${escapeHtml(r.name)}</div>
+        <div class="score-comment">${getFunnyComment(r.round)}</div>
         ${breakdown}
       </div>
       <div class="score-total">${r.totalScore}</div>
@@ -785,6 +786,109 @@ function showFinal(final) {
   `).join('');
 
   showScreen('screen-final');
+}
+
+// ── Funny comments ────────────────────────────────────────────────────────
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function getFunnyComment(round) {
+  if (!round) {
+    return pick([
+      "Decided to let the team carry 😴",
+      "No cut? Bold strategy.",
+      "A strong statement: doing nothing.",
+      "Vibes only, no cuts.",
+      "Perhaps next time… maybe.",
+    ]);
+  }
+
+  const dev    = Math.abs(round.ratio - 0.5);
+  const streak = round.streak || 0;
+  const speed  = round.speed;
+  const style  = round.style;
+
+  // Streak shoutouts take priority
+  if (streak >= 4) return pick([
+    "FOUR IN A ROW?! Call the authorities 🚨",
+    "Someone please stop this person.",
+    "Are you a human or a laser cutter?",
+    "This is getting out of hand (in the best way).",
+  ]);
+  if (streak === 3) return pick([
+    "Three in a row — they're on fire 🔥",
+    "Hat trick of precision!",
+    "Somebody's been practising…",
+    "The streak is real and it's scary.",
+  ]);
+
+  // Perfect cut
+  if (dev <= 0.005) return pick([
+    "Witchcraft. Burn them. 🧙",
+    "That's literally impossible.",
+    "Did you use a ruler?? 📏",
+    "The machine has become self-aware.",
+    "Suspiciously perfect. We're watching you.",
+  ]);
+
+  // Near perfect
+  if (dev <= 0.02) return pick([
+    "Absolutely surgical 🔪",
+    "This should be illegal.",
+    "Hair's breadth from perfection.",
+    "The accuracy on this one…",
+    "They know something the rest of us don't.",
+  ]);
+
+  // Good — with speed/style flavour
+  if (dev <= 0.05) {
+    if (speed >= 25) return pick([
+      "Fast AND accurate? Absolutely rude. 😤",
+      "Speedy and precise — deeply suspicious.",
+      "Nobody asked you to be this good.",
+    ]);
+    if (style >= 35) return pick([
+      "Accurate AND wiggly? A true artist. 🎨",
+      "The flair was unnecessary but deeply appreciated.",
+      "Showing off now, are we?",
+    ]);
+    return pick([
+      "Solid work, solid work. 👌",
+      "Close enough for government work.",
+      "Your mum would be proud.",
+      "Almost too good. Almost.",
+      "We'll allow it.",
+    ]);
+  }
+
+  // Acceptable
+  if (dev <= 0.10) return pick([
+    "Not bad… not great either.",
+    "One side is slightly jealous of the other.",
+    "Good enough to not be embarrassing. 👍",
+    "Room for improvement, but we respect the hustle.",
+    "Somewhere between 'fine' and 'hmm'.",
+  ]);
+
+  // Poor
+  if (dev <= 0.20) return pick([
+    "One side is feeling a bit left out. 😢",
+    "A bold interpretation of 'half'.",
+    "Did you sneeze mid-cut? 🤧",
+    "Confidence: 10/10. Accuracy: less so.",
+    "The spirit was willing but the line was not.",
+  ]);
+
+  // Terrible
+  return pick([
+    "Sir, that is not half. 💀",
+    "The image has been mortally wounded.",
+    "Have you considered a different hobby?",
+    "That's… a choice.",
+    "One side got the very short end of the stick.",
+    "The gap between vision and execution is immense.",
+  ]);
 }
 
 // ── Utils ─────────────────────────────────────────────────────────────────

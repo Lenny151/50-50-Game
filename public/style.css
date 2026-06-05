@@ -171,6 +171,63 @@ input[type="text"]::placeholder { color: var(--muted); }
   text-align: center;
 }
 
+/* ── Score info (home screen) ────────────────────────────────────────────── */
+.score-info {
+  margin-top: 16px;
+  width: 100%;
+  max-width: 400px;
+}
+.score-info-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 8px;
+  text-align: center;
+}
+.score-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.score-info-item {
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.score-info-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.score-info-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.score-info-max {
+  font-size: 0.67rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: rgba(108,99,255,0.12);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.score-info-desc {
+  font-size: 0.71rem;
+  color: var(--muted);
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
 /* ── Lobby ───────────────────────────────────────────────────────────────── */
 .lobby-code-wrap {
   display: flex;
@@ -491,6 +548,21 @@ input[type="text"]::placeholder { color: var(--muted); }
   letter-spacing: 0.1em;
   color: var(--muted);
 }
+.scores-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: -2px;
+  padding: 6px 2px;
+}
+.scores-legend em {
+  font-style: normal;
+  color: var(--primary);
+  opacity: 0.8;
+  white-space: nowrap;
+}
 
 .scores-list { display: flex; flex-direction: column; gap: 8px; }
 
@@ -517,7 +589,8 @@ input[type="text"]::placeholder { color: var(--muted); }
 .score-rank.silver { color: #c0c0c0; }
 .score-rank.bronze { color: #cd7f32; }
 
-.score-name  { flex: 1; font-weight: 600; font-size: 0.95rem; }
+.score-name    { flex: 1; font-weight: 600; font-size: 0.95rem; }
+.score-comment { font-size: 0.75rem; color: var(--muted); font-style: italic; margin: 2px 0; }
 .score-total { font-size: 1.1rem; font-weight: 800; color: var(--primary); min-width: 50px; text-align: right; }
 
 .score-breakdown {
