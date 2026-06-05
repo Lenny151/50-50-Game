@@ -211,7 +211,7 @@ socket.on('round-start', ({ round, total, image, duration, elapsed }) => {
     document.getElementById('draw-hint').textContent = 'Draw a line to cut the image in half!';
     const totalElapsed = (elapsed || 0) + (Date.now() - receivedAt);
     const remainingMs  = Math.max(0, duration - totalElapsed);
-    startTimer(remainingMs / 1000, duration / 1000);
+    startTimer(Math.round(remainingMs / 1000), duration / 1000);
   });
 });
 
