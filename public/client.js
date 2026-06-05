@@ -177,6 +177,7 @@ socket.on('new-host', (hostId) => {
 });
 
 socket.on('round-start', ({ round, total, image, duration, elapsed }) => {
+  const receivedAt = Date.now(); // capture now so we can correct for load time
   currentImage    = image;
   submitted       = false;
   currentPath     = [];
@@ -191,7 +192,7 @@ socket.on('round-start', ({ round, total, image, duration, elapsed }) => {
   document.getElementById('submitted-overlay').classList.add('hidden');
   document.getElementById('btn-submit').disabled = true;
   document.getElementById('progress-label').textContent = '';
-  document.getElementById('draw-hint').textContent = 'Draw a line to cut the image in half!';
+  document.getElementById('draw-hint').textContent = 'Loading…';
 
   // Streak badge — show what multiplier the player can earn this round
   const badge = document.getElementById('streak-badge');
@@ -203,10 +204,15 @@ socket.on('round-start', ({ round, total, image, duration, elapsed }) => {
     badge.classList.add('hidden');
   }
 
-  setupDrawCanvas(image);
   showScreen('screen-drawing');
-  const remainingMs = elapsed ? Math.max(0, duration - elapsed) : duration;
-  startTimer(remainingMs / 1000, duration / 1000);
+
+  // Start timer only once the image is painted — deduct load time from remaining
+  setupDrawCanvas(image).then(() => {
+    document.getElementById('draw-hint').textContent = 'Draw a line to cut the image in half!';
+    const totalElapsed = (elapsed || 0) + (Date.now() - receivedAt);
+    const remainingMs  = Math.max(0, duration - totalElapsed);
+    startTimer(remainingMs / 1000, duration / 1000);
+  });
 });
 
 socket.on('cut-accepted', () => {
@@ -253,32 +259,36 @@ socket.on('game-over', (final) => {
 
 // ── Canvas setup ──────────────────────────────────────────────────────────
 function setupDrawCanvas(imageName) {
-  const canvas = document.getElementById('game-canvas');
-  canvas.width  = CANVAS_SIZE;
-  canvas.height = CANVAS_SIZE;
-  canvas.style.opacity = '0'; // hide until image is painted — prevents white flash
-  const ctx = canvas.getContext('2d');
+  return new Promise(resolve => {
+    const canvas = document.getElementById('game-canvas');
+    canvas.width  = CANVAS_SIZE;
+    canvas.height = CANVAS_SIZE;
+    canvas.style.opacity = '0'; // hide until image is painted — prevents white flash
+    const ctx = canvas.getContext('2d');
 
-  // Transparent offscreen canvas — no background fill so undrawn pixels stay
-  // alpha=0. Used for on-object style calculation.
-  imageCanvas        = document.createElement('canvas');
-  imageCanvas.width  = CANVAS_SIZE;
-  imageCanvas.height = CANVAS_SIZE;
-  const imgCtx       = imageCanvas.getContext('2d');
+    // Transparent offscreen canvas — no background fill so undrawn pixels stay
+    // alpha=0. Used for on-object style calculation.
+    imageCanvas        = document.createElement('canvas');
+    imageCanvas.width  = CANVAS_SIZE;
+    imageCanvas.height = CANVAS_SIZE;
+    const imgCtx       = imageCanvas.getContext('2d');
 
-  const img = new Image();
-  img.src = imgPath(imageName);
-  img.onload = () => {
-    // Main canvas: white background so image sits on white
-    ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-    ctx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
-    canvas.style.opacity = '1'; // fade in once image is ready
-    // imageCanvas stays transparent — used for alpha checks in ratio + style
-    imgCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-    imgCtx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
-  };
+    const img = new Image();
+    img.src = imgPath(imageName);
+    img.onload = () => {
+      // Main canvas: white background so image sits on white
+      ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      ctx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      canvas.style.opacity = '1'; // fade in once image is ready
+      // imageCanvas stays transparent — used for alpha checks in ratio + style
+      imgCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      imgCtx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      resolve();
+    };
+    img.onerror = resolve; // don't block forever if image fails to load
+  });
 }
 
 function renderDrawing() {
